@@ -4,11 +4,13 @@ import re
 def corporate_bond(data):
     data_json={}
     data_json['record']=[]
+    Flag=True
     for index in range(len(data)):
         date_regex=r'([3][0-1]|[0-2][1-9])-[A-Z][a-z]{2}-[0-9]{4}'
         amount_regex=r'[0-9,]+[\.|-][0-9]+'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
         if re.search(isin_regex,data[index]):
+            Flag=False
             line=data[index:index+2][-1]
             pattern=date_regex+'\s([0-9]{1,3})\s'+amount_regex
             if re.search(pattern,line):
@@ -32,6 +34,11 @@ def corporate_bond(data):
                     data_json['record'].append(temp)
                 else:
                     print('entry with error')
+                    raise
+        elif re.search(date_regex,data[index]) and Flag:
+            print('error occured in corporate bond')
+            raise
+
     return(data_json)
 
 
@@ -44,20 +51,32 @@ def mutual_fund_extraction(mutual_fund):
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
         if re.search(isin_regex,mutual_fund[index]):
             line=mutual_fund[index:index+2][-1]
-            values=re.findall(r'\b[0-9,]+[\.|-][0-9]+\b',line)
+            values=re.findall(r'-?[0-9,]+[\.|-][0-9]+',line)
             temp={
                 'ISIN number': re.match(isin_regex,mutual_fund[index]).group(),
                 'Folio No.':re.search(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b',line).group(1)  
             }
-            if len(values)==2:
+            if len(values)==7 or len(values)==6:
+                temp['No. of Units']=values[0]
+                temp['avg cost']=values[1]
+                temp['total cost']=values[2]
+                temp['current nave']=values[3]
+                temp['current value']=values[4]
+                temp['Unrealised Profit/(Loss)']=values[5]
+                if len(values)==7:
+                    temp['Annualised return']=values[6]
+            elif len(values)==2:
                 temp['No. of Units']=values[0]
                 temp['VALUE']=values[1]
-            else:
+            elif len(values)==3:
                 temp['No. of Units']=values[0]
                 temp['NAV']=values[1]
                 temp['VALUE']= values[2]
+            else:
+                print('exception in mutual funds')
+                raise
             line=re.sub(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b','',line)
-            line=re.sub(r'\b[0-9,]+[\.|-][0-9]+\b','',line)
+            line=re.sub(r'-?[0-9,]+[\.|-][0-9]+','',line)
             temp['company name']=line
             data_json['record'].append(temp)
     return(data_json)
@@ -90,12 +109,33 @@ def details(details):
     return(temp)
 
 
+def account_type(details):
+    string=''
+    Flag=False
+    temp={}
+    data_json={}
+    data_json['record']=[]
+    for data in details:
+        if data:
+            if re.search(r'([\w]+\sDemat Account)|(Mutual Fund Folios)',data):
+                Flag=True
+                temp['account_type']=re.search(r'([\w]+\sDemat Account)|(Mutual Fund Folios)',data).group()
+            elif re.search(r'([0-9]+,[0-9|,]+\.[0-9]{2,4})|([0-9]+\.[0-9]{2,4})',data):
+                temp['Value in']=data
+                #string+=' '+data
+                string=re.sub(r'\s\s+',' ',string)
+                string=string.strip()
+                temp['No of isin']=re.findall('\d+',string)[-1]
+                temp['account_details']=string
+                data_json['record'].append(temp)
+                temp={}
+                string=''
+            else:
+                if Flag:
+                    string+=' '+data
+    return(data_json)
 
-
-
-
-
-
+                
 
 
 
