@@ -135,7 +135,44 @@ def account_type(details):
                     string+=' '+data
     return(data_json)
 
-                
+
+def get_val(val):
+    data_val=[]
+    for list_point in val:
+        for point in list_point:
+            if point:
+                data_val.append(point)
+    return(data_val)
+
+
+def equity(data):
+    data_json={}
+    data_json['record']=[]
+    for index in range(len(data)):
+        amount_regex=r'([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})\s([0-9]+)\s([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})|([0-9]+,[0-9|,]+\.[0-9]{2,4})|([0-9]+\.[0-9]{2,4})'
+        isin_regex=r'IN[A-Z|0-9]+[0-9]'
+        if data[index] and re.search(isin_regex,data[index]):
+            temp={
+                'ISIN number': re.match(isin_regex,data[index]).group()  
+            }
+            line=data[index:index+2][-1]
+            if re.search(amount_regex,line):
+                val=re.findall(amount_regex,line)
+                if len(get_val(val)) ==4:
+                    para=get_val(val)
+                    temp['Face value']=para[0]
+                    temp['no of share']=para[1]
+                    temp['market price']=para[2]
+                    temp['value in']=para[3]
+                    line=re.sub(amount_regex,'',line)
+                    line=re.sub(r'\s\s+',' ',line)
+                    temp['company name']=line
+                    data_json['record'].append(temp)
+            else:
+                print('error in equity')
+                raise
+    return(data_json)
+               
 
 
 
