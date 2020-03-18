@@ -65,6 +65,11 @@ def mutual_fund_extraction(mutual_fund):
                 temp['Unrealised Profit/(Loss)']=values[5]
                 if len(values)==7:
                     temp['Annualised return']=values[6]
+            elif len(values)==4:
+                temp['No. of Units']=values[0]
+                temp['total cost']=values[1]
+                temp['current value']=values[2]
+                temp['Unrealised Profit/(Loss)']=values[3]
             elif len(values)==2:
                 temp['No. of Units']=values[0]
                 temp['VALUE']=values[1]
