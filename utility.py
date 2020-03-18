@@ -23,15 +23,20 @@ def extract_data_nsdl(data):
             except Exception:
                 print('Account Detail error')
             result.append(['account type']+re.split(r'([0-9]+,[0-9|,]+\.[0-9]{2,4})|([0-9]+\.[0-9]{2,4})|([\w]+\sDemat Account)|(Mutual Fund Folios)',data[index:index+range_index][-1]))
-        elif re.search(r'ISIN Description|[UCC|uCcC] Units Cost',data[index]):
+        elif re.search(r'ISIN Description|[UCC|uCcC] Units Cost|Profit\/\(Loss\)',data[index]):
             #result.append(['mutual funds']+data[index:index+range_index])
             result.append(['mutual funds']+re.split(r'(IN[A-Z|0-9]+[0-9])',data[index:index+range_index][-1]))
             try:
                 result.append(test.mutual_fund_extraction(['mutual funds']+re.split(r'(IN[A-Z|0-9]+[0-9])',data[index:index+range_index][-1])))
             except Exception:
                 print('mutual fund error')
-            
-        elif re.search(r'Company Name',data[index]):
+        elif re.search(r'Stock Symbol|SECURITY',data[index]):
+            result.append(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
+            try:
+                result.append(test.equity(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
+            except Exception:
+                print('equity error')
+        elif re.search(r'Company Name|Value in',data[index]):
             if re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}',data[index:index+range_index][-1]):
                 #result.append(['corporate bond']+data[index:index+range_index])
                 result.append(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
@@ -39,19 +44,13 @@ def extract_data_nsdl(data):
                     result.append(test.corporate_bond(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
                 except Exception:
                     print('corporate bond error')
-            elif re.search(r'Stock Symbol',data[index:index+range_index][-1]):
-                result.append(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
-                try:
-                    result.append(test.equity(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
-                except Exception:
-                    print('equity error')
             else:
                 result.append(['other share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
                 try:
                     result.append(test.mutual_fund_extraction(['other share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
                 except Exception:
                     print('other error')
-                
+        
         elif re.search(r'Total',data[index]):
             result.append(['Total']+[data[index]])
     return result
@@ -90,7 +89,7 @@ def read_hpi(File_data):
     prev_heading=''
     neg=False
     #word=r'ISIN Description|Total$|End of Statement|CAS ID|Statement for the period'
-    word=r'Notes:|PORTFOLIO VALUE|Note:|CAS ID|Statement for the period|Total|Account Type Account Details|ISIN Description|Company Name|[UCC|uCcC] Units Cost|End of Statement'    
+    word=r'Notes:|PORTFOLIO VALUE|Note:|CAS ID|Statement for the period|Total|Account Type Account Details|ISIN Description|Company Name|[UCC|uCcC] Units Cost|End of Statement|Value in|Profit\/\(Loss\)|SECURITY'    
     k = re.compile(word)  
     current_heading=False
     data=''

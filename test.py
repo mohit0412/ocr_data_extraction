@@ -174,7 +174,7 @@ def equity(data):
                     data_json['record'].append(temp)
                 else:
                     print('error in equity')
-                    #raise
+                    raise
     return(data_json)
             
 
