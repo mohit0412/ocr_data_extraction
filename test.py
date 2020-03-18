@@ -154,12 +154,11 @@ def equity(data):
     data_json={}
     data_json['record']=[]
     for index in range(len(data)):
-        amount_regex=r'([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})\s([0-9]+)\s([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})|([0-9]+,[0-9|,]+\.[0-9]{2,4})|([0-9]+\.[0-9]{2,4})'
+        amount_regex=r'([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})\s([0-9|,]+)\s([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})|([0-9|,]+\.[0-9]{2,4})'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
+        temp={}
         if data[index] and re.search(isin_regex,data[index]):
-            temp={
-                'ISIN number': re.match(isin_regex,data[index]).group()  
-            }
+            temp['ISIN number']=re.match(isin_regex,data[index]).group() 
             line=data[index:index+2][-1]
             if re.search(amount_regex,line):
                 val=re.findall(amount_regex,line)
@@ -173,11 +172,11 @@ def equity(data):
                     line=re.sub(r'\s\s+',' ',line)
                     temp['company name']=line
                     data_json['record'].append(temp)
-            else:
-                print('error in equity')
-                raise
+                else:
+                    print('error in equity')
+                    #raise
     return(data_json)
-               
+            
 
 
 
