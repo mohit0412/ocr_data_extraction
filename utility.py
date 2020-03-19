@@ -25,7 +25,7 @@ def extract_data_nsdl(data):
             result.append(['account type']+re.split(r'([0-9]+,[0-9|,]+\.[0-9]{2,4})|([0-9]+\.[0-9]{2,4})|([\w]+\sDemat Account)|(Mutual Fund Folios)',data[index:index+range_index][-1]))
         elif re.search(r'ISIN Description|[UCC|uCcC] Units Cost|Profit\/\(Loss\)',data[index]):
             #result.append(['mutual funds']+data[index:index+range_index])
-            result.append(['mutual funds']+re.split(r'(IN[A-Z|0-9]+[0-9])',data[index:index+range_index][-1]))
+            result.append(['mutual funds']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
             try:
                 result.append(test.mutual_fund_extraction(['mutual funds']+re.split(r'(IN[A-Z|0-9]+[0-9])',data[index:index+range_index][-1])))
             except Exception:

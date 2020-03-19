@@ -49,13 +49,14 @@ def mutual_fund_extraction(mutual_fund):
     for index in range(len(mutual_fund)):
         amount_regex=r'[0-9,]+[\.|-][0-9]+'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
-        if re.search(isin_regex,mutual_fund[index]):
+        if mutual_fund[index] and re.search(isin_regex,mutual_fund[index]):
             line=mutual_fund[index:index+2][-1]
             values=re.findall(r'-?[0-9,]+[\.|-][0-9]+',line)
             temp={
-                'ISIN number': re.match(isin_regex,mutual_fund[index]).group(),
-                'Folio No.':re.search(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b',line).group(1)  
+                'ISIN number': re.match(isin_regex,mutual_fund[index]).group()  
             }
+            if re.search(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b',line):
+                temp['Folio No.']=re.search(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b',line).group(1)
             if len(values)==7 or len(values)==6:
                 temp['No. of Units']=values[0]
                 temp['avg cost']=values[1]
@@ -161,7 +162,7 @@ def equity(data):
             line=data[index:index+2][-1]
             if re.search(amount_regex,line):
                 val=re.findall(amount_regex,line)
-                if len(get_val(val)) ==4:
+                if len(get_val(val))==4:
                     para=get_val(val)
                     temp['Face value']=para[0]
                     temp['no of share']=para[1]
@@ -170,16 +171,24 @@ def equity(data):
                     line=re.sub(amount_regex,'',line)
                     line=re.sub(r'\s\s+',' ',line)
                     temp['company name']=line
-                    data_json['record'].append(temp)
+                elif len(get_val(val))==2:
+                    if re.search(r'See Note',line):
+                        line=re.sub(r'See Note','',line)
+                        line=re.sub(r'\s\s+',' ',line)
+                        if len(get_val(re.findall(amount_regex,line)))==3:
+                            para2=get_val(re.findall(amount_regex,line))
+                            temp['Face value']=para2[0]
+                            temp['no of share']=para2[1]
+                            temp['market price']='See Note'
+                            temp['value in']=para2[2]
+                            temp['company name']=line
+                    else:
+                        print('error in equity')
+                        raise
                 else:
                     print('error in equity')
                     raise
+                data_json['record'].append(temp)
     return(data_json)
-
-#print(account_type(['account type', 'INTEGRATED ENTERPRISES(INDIA) PRIVATE LIMITED ', None, None, 'NSDL Demat Account', None, ' yp 1:1N301313 Client ID:20194714 7 ', '42,34,821.05', None, None, None, ' BONANZA PORTFOLIO LTD ', None, None, 'NSDL Demat Account', None, ' pp 1p:1N301477 Client ID:20020825 3 ', '19,46,224.00', None, None, None, '']))
-            
-
-
-
 
 
