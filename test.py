@@ -120,7 +120,7 @@ def account_type(details):
     temp={}
     data_json={}
     data_json['record']=[]
-    for data in details:
+    for data in details[1:]:
         if data:
             if re.search(r'([\w]+\sDemat Account)|(Mutual Fund Folios)',data):
                 Flag=True
@@ -136,8 +136,7 @@ def account_type(details):
                 temp={}
                 string=''
             else:
-                if Flag:
-                    string+=' '+data
+                string+=' '+data
     return(data_json)
 
 
@@ -176,6 +175,8 @@ def equity(data):
                     print('error in equity')
                     raise
     return(data_json)
+
+#print(account_type(['account type', 'INTEGRATED ENTERPRISES(INDIA) PRIVATE LIMITED ', None, None, 'NSDL Demat Account', None, ' yp 1:1N301313 Client ID:20194714 7 ', '42,34,821.05', None, None, None, ' BONANZA PORTFOLIO LTD ', None, None, 'NSDL Demat Account', None, ' pp 1p:1N301477 Client ID:20020825 3 ', '19,46,224.00', None, None, None, '']))
             
 
 
