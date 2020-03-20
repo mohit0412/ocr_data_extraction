@@ -51,13 +51,13 @@ def mutual_fund_extraction(mutual_fund):
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
         if mutual_fund[index] and re.search(isin_regex,mutual_fund[index]):
             line=mutual_fund[index:index+2][-1]
-            values=re.findall(r'-?[0-9,]+[\.|-][0-9]+',line)
+            values=re.findall(r'-?[0-9,]+[\.|-][0-9|\.]+',line)
             temp={
                 'ISIN number': re.match(isin_regex,mutual_fund[index]).group()  
             }
             if re.search(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b',line):
                 temp['Folio No.']=re.search(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b',line).group(1)
-            if len(values)==7 or len(values)==6:
+            if len(values)==7 or len(values)==6 or len(values)==8:
                 temp['No. of Units']=values[0]
                 temp['avg cost']=values[1]
                 temp['total cost']=values[2]
@@ -79,10 +79,10 @@ def mutual_fund_extraction(mutual_fund):
                 temp['NAV']=values[1]
                 temp['VALUE']= values[2]
             else:
-                print('exception in mutual funds')
+                print('entry with error')
                 raise
             line=re.sub(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b','',line)
-            line=re.sub(r'-?[0-9,]+[\.|-][0-9]+','',line)
+            line=re.sub(r'-?[0-9,]+[\.|-][0-9|\.]+','',line)
             temp['company name']=line
             data_json['record'].append(temp)
     return(data_json)
@@ -183,12 +183,11 @@ def equity(data):
                             temp['value in']=para2[2]
                             temp['company name']=line
                     else:
-                        print('error in equity')
+                        print('error in entry')
                         raise
                 else:
                     print('error in equity')
                     raise
                 data_json['record'].append(temp)
     return(data_json)
-
 

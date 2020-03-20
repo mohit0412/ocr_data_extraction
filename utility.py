@@ -31,14 +31,20 @@ def extract_data_nsdl(data):
             except Exception:
                 print('mutual fund error')
         elif re.search(r'Stock Symbol|SECURITY',data[index]):
-            result.append(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
-            try:
-                result.append(test.equity(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
-            except Exception:
-                print('equity error')
+            if re.search(r'SECURITY',data[index]):
+                print('Security equity case to be handel')
+                pass
+            else:
+                result.append(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
+                try:
+                    result.append(test.equity(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
+                except Exception:
+                    print('equity error')
         elif re.search(r'Company Name|Value in',data[index]):
+            #pos1=re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}',data[index:index+range_index][-1]).index
+            #pos2=re.search(r'(IN[A-Z|0-9]+[0-9])',data[index:index+range_index][-1]).index
+            #print('.....',pos1,pos2)
             if re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}',data[index:index+range_index][-1]):
-                #result.append(['corporate bond']+data[index:index+range_index])
                 result.append(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
                 try:
                     result.append(test.corporate_bond(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
@@ -91,7 +97,7 @@ def read_hpi(File_data):
     prev_heading=''
     neg=False
     #word=r'ISIN Description|Total$|End of Statement|CAS ID|Statement for the period'
-    word=r'Notes:|PORTFOLIO VALUE|Note:|CAS ID|Statement for the period|Total|Account Type Account Details|ISIN Description|Company Name|[UCC|uCcC] Units Cost|End of Statement|Value in|Profit\/\(Loss\)|SECURITY|Stock Symbol'    
+    word=r'Notes:|PORTFOLIO VALUE|Note:|CAS ID|Statement for the period|Total|Account Type Account Details|ISIN Description|Company Name|[UCC|uCcC] Units Cost|End of Statement|Value in|Profit\/\(Loss\)|SECURITY|Stock Symbol|\| Transactions|Order No'    
     k = re.compile(word)  
     current_heading=False
     data=''
@@ -108,7 +114,7 @@ def read_hpi(File_data):
             data=''
             #print('................found........................',re.search(k,line).group()) 
             if current_heading:
-                word_neg=r'End of Statement|Notes:|Note:|Total'
+                word_neg=r'End of Statement|Notes:|Note:|Total|\| Transactions|Order No'
                 k2 = re.compile(word_neg, re.I) 
                 if re.search(k2,line):
                     neg=True
