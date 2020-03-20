@@ -31,7 +31,7 @@ def corporate_bond(data):
                     line=re.sub(date_regex,'',line)
                     line=re.sub(r'\s\s+','',line)
                     temp['company name']=line
-                    data_json['record'].append(temp)
+                    data_json['corporate bond'].append(temp)
                 else:
                     print('entry with error')
                     raise
@@ -84,7 +84,7 @@ def mutual_fund_extraction(mutual_fund):
             line=re.sub(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b','',line)
             line=re.sub(r'-?[0-9,]+[\.|-][0-9|\.]+','',line)
             temp['company name']=line
-            data_json['record'].append(temp)
+            data_json['mutual funds'].append(temp)
     return(data_json)
 
 
@@ -120,7 +120,7 @@ def account_type(details):
     Flag=False
     temp={}
     data_json={}
-    data_json['account type']=[]
+    data_json['account type data']=[]
     for data in details[1:]:
         if data:
             if re.search(r'([\w]+\sDemat Account)|(Mutual Fund Folios)',data):
@@ -133,7 +133,7 @@ def account_type(details):
                 string=string.strip()
                 temp['No of isin']=re.findall('\d+',string)[-1]
                 temp['account_details']=string
-                data_json['record'].append(temp)
+                data_json['account type data'].append(temp)
                 temp={}
                 string=''
             else:
@@ -188,7 +188,7 @@ def equity(data):
                 else:
                     print('error in equity')
                     raise
-                data_json['record'].append(temp)
+                data_json['equity'].append(temp)
     return(data_json)
 
 
@@ -215,5 +215,44 @@ def equity_type_2(data):
                 else:
                     print('error in security')
                     raise
-                data_json['record'].append(temp)
+                data_json['equity'].append(temp)
     return(data_json)
+
+
+def corporate_bond_type_2(data):
+    data_json={}
+    data_json['corporate bond']=[]
+    for index in range(len(data)):
+        date_regex=r'([3][0-1]|[0-2][1-9])-[A-Z][a-z]{2}-[0-9]{4}'
+        amount_regex=r'[0-9,]+[\.|-][0-9]+'
+        isin_regex=r'IN[A-Z|0-9]+[0-9]'
+        temp={}
+        if data[index] and re.search(isin_regex,data[index]):
+            temp['ISIN number']=re.match(isin_regex,data[index]).group()
+            amount=' '.join(map(str, data[index-2:index]))
+            pattern=date_regex+'\s([0-9]{1,3})\s'+amount_regex
+            if re.search(amount_regex,amount) and re.search(date_regex,amount):
+                temp['Maturity Date']=re.search(date_regex,amount).group()
+                amount_val=re.findall(amount_regex,amount)
+                if len(amount_val)==3 or len(amount_val)==2:
+                    line=' '.join(map(str, data[index+1:index+2]))
+                    if len(amount_val)==3:
+                        temp['Coupon Rate/Frequency']=amount_val[0]
+                        temp['Face Value Per Bond in']=amount_val[1]
+                        temp['Value in']=amount_val[2]
+                    else:
+                        temp['Face Value Per Bond in']=amount_val[0]
+                        temp['Value in']=amount_val[1]
+                    if re.search(r'\bFixed\s+Interest\s+Bonds\b',line):
+                        temp['bond type']=re.search(r'\bFixed\s+Interest\s+Bonds\b',line).group()
+                    line=re.sub(r'\bFixed\s+Interest\s+Bonds\b','',line)
+                    temp['company name']=line
+                else:
+                    print('data error')
+                    raise
+            data_json['corporate bond'].append(temp)
+    return(data_json)
+                
+
+    
+    

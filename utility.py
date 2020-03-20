@@ -1,6 +1,7 @@
 import re
 import test
 
+
 def extract_data_nsdl(data):
     result=[]
     range_index=2
@@ -42,14 +43,18 @@ def extract_data_nsdl(data):
                 try:
                     result.append(test.equity(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
                 except Exception:
-                    print('equity error')
+                    result.append(test.equity(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
         elif re.search(r'Company Name|Value in',data[index]):
             if re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}',data[index:index+range_index][-1]):
                 result.append(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
                 try:
                     result.append(test.corporate_bond(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
                 except Exception:
-                    print('corporate bond error')
+                    try:
+                        print('trying another method')
+                        result.append(test.corporate_bond_type_2(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9]|-?[0-9,]+[\.|-][0-9|\.]+?\s+[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4})|Page',data[index:index+range_index][-1])))
+                    except Exception:
+                        print('corporate bond error')
             else:
                 if re.search(r'(IN[A-Z|0-9]+[0-9])',data[index]):
                     result.append(['other share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
@@ -62,6 +67,7 @@ def extract_data_nsdl(data):
         elif re.search(r'Total',data[index]):
             result.append(['Total']+[data[index]])
     return result
+
 
 
 def extract_data(file_name='new_result.txt'):
@@ -89,6 +95,7 @@ def extract_data(file_name='new_result.txt'):
     with open(file_name+'_'+str(count-1)+'.log', 'w') as outfile:
         json.dump(data, outfile,indent=4)
     return count
+
 
 
 def read_hpi(File_data):
