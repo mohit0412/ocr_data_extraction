@@ -3,7 +3,7 @@ import re
 
 def corporate_bond(data):
     data_json={}
-    data_json['record']=[]
+    data_json['corporate bond']=[]
     Flag=True
     for index in range(len(data)):
         date_regex=r'([3][0-1]|[0-2][1-9])-[A-Z][a-z]{2}-[0-9]{4}'
@@ -45,7 +45,7 @@ def corporate_bond(data):
 
 def mutual_fund_extraction(mutual_fund):
     data_json={}
-    data_json['record']=[]
+    data_json['mutual funds']=[]
     for index in range(len(mutual_fund)):
         amount_regex=r'[0-9,]+[\.|-][0-9]+'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
@@ -120,7 +120,7 @@ def account_type(details):
     Flag=False
     temp={}
     data_json={}
-    data_json['record']=[]
+    data_json['account type']=[]
     for data in details[1:]:
         if data:
             if re.search(r'([\w]+\sDemat Account)|(Mutual Fund Folios)',data):
@@ -152,7 +152,7 @@ def get_val(val):
 
 def equity(data):
     data_json={}
-    data_json['record']=[]
+    data_json['equity']=[]
     for index in range(len(data)):
         amount_regex=r'([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})\s([0-9|,]+)\s([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})|([0-9|,]+\.[0-9]{2,4})'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
@@ -191,3 +191,29 @@ def equity(data):
                 data_json['record'].append(temp)
     return(data_json)
 
+
+def equity_type_2(data):
+    data_json={}
+    data_json['equity']=[]
+    for index in range(len(data)):
+        amount_regex=r'([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})\s([0-9|,]+)\s([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})|([0-9|,]+\.[0-9]{2,4})'
+        isin_regex=r'IN[A-Z|0-9]+[0-9]'
+        temp={}
+        if data[index] and re.search(isin_regex,data[index]):
+            temp['ISIN number']=re.match(isin_regex,data[index]).group() 
+            line=data[index:index+2][-1]
+            if re.search(r'-?[0-9,]+[\.|-][0-9|\.]+',line):
+                amount=re.findall(r'-?[0-9,]+[\.|-][0-9|\.]+',line)
+                if len(amount)>5:
+                    temp['current bal']=amount[0]
+                    temp['safkeep bal']=amount[1]
+                    temp['pledged bal']=amount[2]
+                    temp['market price']=amount[3]
+                    temp['value']=amount[4]
+                    line=re.sub(r'-?[0-9,]+[\.|-][0-9|\.]+','',line)
+                    temp['security']=line
+                else:
+                    print('error in security')
+                    raise
+                data_json['record'].append(temp)
+    return(data_json)

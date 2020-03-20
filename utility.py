@@ -32,8 +32,11 @@ def extract_data_nsdl(data):
                 print('mutual fund error')
         elif re.search(r'Stock Symbol|SECURITY',data[index]):
             if re.search(r'SECURITY',data[index]):
-                print('Security equity case to be handel')
-                pass
+                result.append(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
+                try:
+                    result.append(test.equity_type_2(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1])))
+                except Exception:
+                    print('security equity error')
             else:
                 result.append(['equity share']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
                 try:
@@ -41,9 +44,6 @@ def extract_data_nsdl(data):
                 except Exception:
                     print('equity error')
         elif re.search(r'Company Name|Value in',data[index]):
-            #pos1=re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}',data[index:index+range_index][-1]).index
-            #pos2=re.search(r'(IN[A-Z|0-9]+[0-9])',data[index:index+range_index][-1]).index
-            #print('.....',pos1,pos2)
             if re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}',data[index:index+range_index][-1]):
                 result.append(['corporate bond']+re.split(r'(IN[A-Z|0-9]+[0-9])|Page',data[index:index+range_index][-1]))
                 try:
