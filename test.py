@@ -5,8 +5,11 @@ def corporate_bond(data):
     data_json={}
     data_json['corporate bond']=[]
     Flag=True
+    data_json['details']=[]
+    sum_val=0
+    count=0
     for index in range(len(data)):
-        date_regex=r'([3][0-1]|[0-2][1-9])-[A-Z][a-z]{2}-[0-9]{4}'
+        date_regex=r'([3][0-1]|[0-2][0-9])-[A-Z][a-z]{2}-[0-9]{4}'
         amount_regex=r'[0-9,]+[\.|-][0-9]+'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
         if re.search(isin_regex,data[index]):
@@ -16,6 +19,7 @@ def corporate_bond(data):
             if re.search(pattern,line):
                 if len(re.findall(amount_regex,line)) == 3:
                     val=re.findall(amount_regex,line)
+                    sum_val=sum_val+float(re.sub(r',','',val[2]))
                     temp={
                         'ISIN number': re.match(isin_regex,data[index]).group(),
                         'no of bonds': re.search(pattern,line).group(1),
@@ -31,6 +35,7 @@ def corporate_bond(data):
                     line=re.sub(date_regex,'',line)
                     line=re.sub(r'\s\s+','',line)
                     temp['company name']=line
+                    count=count+1
                     data_json['corporate bond'].append(temp)
                 else:
                     print('entry with error')
@@ -38,7 +43,7 @@ def corporate_bond(data):
         elif re.search(date_regex,data[index]) and Flag:
             print('error occured in corporate bond')
             raise
-
+    data_json['details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
@@ -46,6 +51,9 @@ def corporate_bond(data):
 def mutual_fund_extraction(mutual_fund):
     data_json={}
     data_json['mutual funds']=[]
+    data_json['details']=[]
+    sum_val=0
+    count=0
     for index in range(len(mutual_fund)):
         amount_regex=r'[0-9,]+[\.|-][0-9]+'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
@@ -63,6 +71,7 @@ def mutual_fund_extraction(mutual_fund):
                 temp['total cost']=values[2]
                 temp['current nave']=values[3]
                 temp['current value']=values[4]
+                sum_val=sum_val+float(re.sub(r',','',values[4]))
                 temp['Unrealised Profit/(Loss)']=values[5]
                 if len(values)==7:
                     temp['Annualised return']=values[6]
@@ -70,21 +79,26 @@ def mutual_fund_extraction(mutual_fund):
                 temp['No. of Units']=values[0]
                 temp['total cost']=values[1]
                 temp['current value']=values[2]
+                sum_val=sum_val+float(re.sub(r',','',values[2]))
                 temp['Unrealised Profit/(Loss)']=values[3]
             elif len(values)==2:
                 temp['No. of Units']=values[0]
                 temp['VALUE']=values[1]
+                sum_val=sum_val+float(re.sub(r',','',values[1]))
             elif len(values)==3:
                 temp['No. of Units']=values[0]
                 temp['NAV']=values[1]
                 temp['VALUE']= values[2]
+                sum_val=sum_val+float(re.sub(r',','',values[2]))
             else:
                 print('entry with error')
                 raise
             line=re.sub(r'\b([0-9|A-Z]+)\s[0-9,]+[\.|-][0-9]{3}\b','',line)
             line=re.sub(r'-?[0-9,]+[\.|-][0-9|\.]+','',line)
             temp['company name']=line
+            count=count+1
             data_json['mutual funds'].append(temp)
+    data_json['details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
@@ -121,6 +135,9 @@ def account_type(details):
     temp={}
     data_json={}
     data_json['account type data']=[]
+    data_json['details']=[]
+    sum_val=0
+    count=0
     for data in details[1:]:
         if data:
             if re.search(r'([\w]+\sDemat Account)|(Mutual Fund Folios)',data):
@@ -128,16 +145,19 @@ def account_type(details):
                 temp['account_type']=re.search(r'([\w]+\sDemat Account)|(Mutual Fund Folios)',data).group()
             elif re.search(r'([0-9]+,[0-9|,]+\.[0-9]{2,4})|([0-9]+\.[0-9]{2,4})',data):
                 temp['Value in']=data
+                sum_val=sum_val+float(re.sub(r',','',data))
                 #string+=' '+data
                 string=re.sub(r'\s\s+',' ',string)
                 string=string.strip()
                 temp['No of isin']=re.findall('\d+',string)[-1]
                 temp['account_details']=string
+                count=count+1
                 data_json['account type data'].append(temp)
                 temp={}
                 string=''
             else:
                 string+=' '+data
+    data_json['details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
@@ -153,6 +173,9 @@ def get_val(val):
 def equity(data):
     data_json={}
     data_json['equity']=[]
+    data_json['details']=[]
+    sum_val=0
+    count=0
     for index in range(len(data)):
         amount_regex=r'([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})\s([0-9|,]+)\s([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})|([0-9|,]+\.[0-9]{2,4})'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
@@ -168,6 +191,7 @@ def equity(data):
                     temp['no of share']=para[1]
                     temp['market price']=para[2]
                     temp['value in']=para[3]
+                    sum_val=sum_val+float(re.sub(r',','',para[3]))
                     line=re.sub(amount_regex,'',line)
                     line=re.sub(r'\s\s+',' ',line)
                     temp['company name']=line
@@ -181,6 +205,7 @@ def equity(data):
                             temp['no of share']=para2[1]
                             temp['market price']='See Note'
                             temp['value in']=para2[2]
+                            sum_val=sum_val+float(re.sub(r',','',para2[2]))
                             temp['company name']=line
                     else:
                         print('error in entry')
@@ -188,13 +213,18 @@ def equity(data):
                 else:
                     print('error in equity')
                     raise
+                count=count+1
                 data_json['equity'].append(temp)
+    data_json['details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
 def equity_type_2(data):
     data_json={}
     data_json['equity']=[]
+    data_json['details']=[]
+    sum_val=0
+    count=0
     for index in range(len(data)):
         amount_regex=r'([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})\s([0-9|,]+)\s([0-9]+,[0-9|,]+\.[0-9]{2,4}|[0-9]+\.[0-9]{2,4})|([0-9|,]+\.[0-9]{2,4})'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
@@ -210,20 +240,26 @@ def equity_type_2(data):
                     temp['pledged bal']=amount[2]
                     temp['market price']=amount[3]
                     temp['value']=amount[4]
+                    sum_val=sum_val+float(re.sub(r',','',amount[4]))
                     line=re.sub(r'-?[0-9,]+[\.|-][0-9|\.]+','',line)
                     temp['security']=line
                 else:
                     print('error in security')
                     raise
+                count=count+1
                 data_json['equity'].append(temp)
+    data_json['details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
 def corporate_bond_type_2(data):
     data_json={}
     data_json['corporate bond']=[]
+    data_json['details']=[]
+    sum_val=0
+    count=0
     for index in range(len(data)):
-        date_regex=r'([3][0-1]|[0-2][1-9])-[A-Z][a-z]{2}-[0-9]{4}'
+        date_regex=r'([3][0-1]|[0-2][0-9])-[A-Z][a-z]{2}-[0-9]{4}'
         amount_regex=r'[0-9,]+[\.|-][0-9]+'
         isin_regex=r'IN[A-Z|0-9]+[0-9]'
         temp={}
@@ -240,9 +276,11 @@ def corporate_bond_type_2(data):
                         temp['Coupon Rate/Frequency']=amount_val[0]
                         temp['Face Value Per Bond in']=amount_val[1]
                         temp['Value in']=amount_val[2]
+                        sum_val=sum_val+float(re.sub(r',','',amount_val[2]))
                     else:
                         temp['Face Value Per Bond in']=amount_val[0]
                         temp['Value in']=amount_val[1]
+                        sum_val=sum_val+float(re.sub(r',','',amount_val[1]))
                     if re.search(r'\bFixed\s+Interest\s+Bonds\b',line):
                         temp['bond type']=re.search(r'\bFixed\s+Interest\s+Bonds\b',line).group()
                     line=re.sub(r'\bFixed\s+Interest\s+Bonds\b','',line)
@@ -250,9 +288,9 @@ def corporate_bond_type_2(data):
                 else:
                     print('data error')
                     raise
+            count=count+1
             data_json['corporate bond'].append(temp)
+    data_json['details'].append({'total count':count,'Total':sum_val})
     return(data_json)
                 
-
-    
-    
+   

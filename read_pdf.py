@@ -64,16 +64,16 @@ if __name__ == "__main__":
     pil_images = pdftopil()
     save_images(pil_images)
     text=re.sub(r'\s\s+','\n',result)
-    with open('intermediate_text_chandrika1.txt','w+') as op:
-        for data in text.split('\n'):
-            op.write(str(data)+'\n\n')
+    # with open('intermediate_text_chandrika1.txt','w+') as op:
+    #     for data in text.split('\n'):
+    #         op.write(str(data)+'\n\n')
     preprocess_text=read_hpi(text.split('\n'))
-    with open('intermediate_text_chandrika2.txt','w+') as op:
-        op.write(str(preprocess_text))
+    # with open('intermediate_text_chandrika2.txt','w+') as op:
+    #     op.write(str(preprocess_text))
         #for data in preprocess_text:
         #    op.write(str(data)+'\n\n')
     final_data=extract_data_nsdl(preprocess_text)
-    with open('intermediate_text_chandrika.txt','w+') as op:
+    with open('result.txt','w+',encoding='utf-8',errors='ignore') as op:
        for data in final_data:
           op.write(str(data)+'\n\n')
     print("----------------------------------- %s seconds -------------------------" % (time.time() - start_time))
