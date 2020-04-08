@@ -6,6 +6,16 @@ def extract_data_nsdl(data):
     result=[]
     range_index=2
     for index in range(len(data)):
+        if re.search(r'\(PAN:[A-Z|0-9]{10}\)',data[index]):
+            result.append({'PAN :':re.search(r'\(PAN:([A-Z|0-9]{10})\)',data[index]).group(1)})
+        #if re.search(r'[A-z|0-9]+?\s+?Client?\s+ID\:?\s?([0-9]+)',data[index]):
+        #    print(re.search(r'([A-z|0-9]+)?\s+?Client?\s+ID\:?\s?([0-9]+)',data[index]).group())
+        if re.search(r'Client?\s+ID\:?\s?([0-9]+)',data[index]):
+            result.append({'Client ID :':re.search(r'Client?\s+ID\:?\s?([0-9]+)',data[index]).group(1)})
+            #print(re.search(r'Client?\s+ID\:?\s?([0-9]+)',data[index]).group(1))
+        if re.search(r'DP?\s+ID\:?\s?[A-Z|0-9]+',data[index]):
+            result.append({'DP ID :':re.search(r'DP?\s+ID\:?\s?([A-Z|0-9]+)',data[index]).group(1)})
+            #print(re.search(r'DP?\s+ID\:?\s?([A-Z|0-9]+)',data[index]).group(1))
         if re.search(r'CAS ID',data[index]):
             #result.append(['details']+[data[index]]+re.split(r'(PINCODE)',data[index:index+range_index][-1]))
             try:
@@ -135,8 +145,8 @@ def read_hpi(File_data):
                 if re.search(k2,line):
                     neg=True
                 else:
-                    if prev_heading!=line.strip():
-                        result_data.append(line.strip())
+                    #if prev_heading!=line.strip():
+                    result_data.append(line.strip())
                     prev_heading=line.strip()
                     neg=False
         elif current_heading and len(File_data)==count and not neg:

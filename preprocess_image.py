@@ -90,7 +90,6 @@ def remove_background(img):
         # Binarize the image using OTSU's algorithm. This is used to find the center
         # of mass of the image, and find the threshold to remove background noise
         threshold, _ = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
         # Remove noise - anything higher than the threshold. Note that the image is still grayscale
         img[img > threshold] = 255
 

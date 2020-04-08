@@ -150,6 +150,10 @@ def account_type(details):
                 string=re.sub(r'\s\s+',' ',string)
                 string=string.strip()
                 temp['No of isin']=re.findall('\d+',string)[-1]
+                if re.search(r'([A-z|0-9]+)?\s+?Client?\s+[I|1]D\:?\s?([0-9]+)',string):
+                    temp['Client ID']=re.search(r'([A-z|0-9]+)?\s+?Client?\s+[I|1]D\:?\s?([0-9]+)',string).group(2)
+                    temp['DP ID']=re.sub(r'1N','IN',re.search(r'([A-z|0-9]+)?\s+?Client?\s+[I|1]D\:?\s?([0-9]+)',string).group(1))
+                    string=re.sub(r'([A-z|0-9]+)?\s+?Client?\s+[I|1]D\:?\s?([0-9]+).*',' ',string)
                 temp['account_details']=string
                 count=count+1
                 data_json['account type data'].append(temp)
@@ -292,5 +296,4 @@ def corporate_bond_type_2(data):
             data_json['corporate bond'].append(temp)
     data_json['details'].append({'total count':count,'Total':sum_val})
     return(data_json)
-                
-   
+        

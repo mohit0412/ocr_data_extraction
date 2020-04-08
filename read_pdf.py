@@ -15,6 +15,7 @@ import cv2
 import pytesseract
 import preprocess_image
 from pytesseract import Output
+os.environ['OMP_THREAD_LIMIT']='1'
 
 #DECLARE CONSTANTS
 PDF_PATH = sys.argv[1]
@@ -42,7 +43,7 @@ def ocr(img,big_filename):
 
 
 def pdftopil():
-    pil_images = pdf2image.convert_from_path(PDF_PATH, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE, last_page=LAST_PAGE, fmt=FORMAT, thread_count=THREAD_COUNT, userpw=USERPWD, use_cropbox=USE_CROPBOX, strict=STRICT)
+    pil_images = pdf2image.convert_from_path(PDF_PATH, dpi=DPI, output_folder=OUTPUT_FOLDER, userpw=USERPWD, use_cropbox=USE_CROPBOX, strict=STRICT)
     return pil_images
     
     
@@ -53,6 +54,7 @@ def save_images(pil_images):
         image.save("page_" + str(index) + ".jpg")
         img=preprocess_image.get_grayscale(cv2.imread("page_" + str(index) + ".jpg"))
         img=preprocess_image.thresholding(img)
+        cv2.imwrite("pageinter_" + str(index) + ".jpg",img)
         t=threading.Thread(target=ocr, args=(img,"page_" + str(index) + ".jpg",))
         t.start()
         t.join()
@@ -68,11 +70,11 @@ if __name__ == "__main__":
     #     for data in text.split('\n'):
     #         op.write(str(data)+'\n\n')
     preprocess_text=read_hpi(text.split('\n'))
-    # with open('intermediate_text_chandrika2.txt','w+') as op:
-    #     for data in preprocess_text:
-    #         op.write(str(data)+'\n\n')
+    with open(sys.argv[1].split('.')[0]+'_intermediate.txt','w+') as op:
+        for data in preprocess_text:
+            op.write(str(data)+'\n\n')
     final_data=extract_data_nsdl(preprocess_text)
-    with open('result.txt','w+',encoding='utf-8',errors='ignore') as op:
+    with open(sys.argv[1].split('.')[0]+'.txt','w+',encoding='utf-8',errors='ignore') as op:
        for data in final_data:
           op.write(str(data)+'\n\n')
     print("----------------------------------- %s seconds -------------------------" % (time.time() - start_time))
