@@ -5,7 +5,7 @@ def corporate_bond(data):
     data_json={}
     data_json['corporate bond']=[]
     Flag=True
-    data_json['details']=[]
+    data_json['corporate_details']=[]
     sum_val=0
     count=0
     for index in range(len(data)):
@@ -43,7 +43,7 @@ def corporate_bond(data):
         elif re.search(date_regex,data[index]) and Flag:
             print('error occured in corporate bond')
             raise
-    data_json['details'].append({'total count':count,'Total':sum_val})
+    data_json['corporate_details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
@@ -51,7 +51,7 @@ def corporate_bond(data):
 def mutual_fund_extraction(mutual_fund):
     data_json={}
     data_json['mutual funds']=[]
-    data_json['details']=[]
+    data_json['mutual_details']=[]
     sum_val=0
     count=0
     for index in range(len(mutual_fund)):
@@ -98,7 +98,7 @@ def mutual_fund_extraction(mutual_fund):
             temp['company name']=line
             count=count+1
             data_json['mutual funds'].append(temp)
-    data_json['details'].append({'total count':count,'Total':sum_val})
+    data_json['mutual_details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
@@ -134,8 +134,8 @@ def account_type(details):
     Flag=False
     temp={}
     data_json={}
-    data_json['account type data']=[]
-    data_json['details']=[]
+    data_json['Acountinfo']=[]
+    data_json['Acountinfo_details']=[]
     sum_val=0
     count=0
     for data in details[1:]:
@@ -154,14 +154,14 @@ def account_type(details):
                     temp['Client ID']=re.search(r'([A-z|0-9]+)?\s+?Client?\s+[I|1]D\:?\s?([0-9]+)',string).group(2)
                     temp['DP ID']=re.sub(r'1N','IN',re.search(r'([A-z|0-9]+)?\s+?Client?\s+[I|1]D\:?\s?([0-9]+)',string).group(1))
                     string=re.sub(r'([A-z|0-9]+)?\s+?Client?\s+[I|1]D\:?\s?([0-9]+).*',' ',string)
-                temp['account_details']=string
+                temp['Acountinfo_details']=string
                 count=count+1
-                data_json['account type data'].append(temp)
+                data_json['Acountinfo'].append(temp)
                 temp={}
                 string=''
             else:
                 string+=' '+data
-    data_json['details'].append({'total count':count,'Total':sum_val})
+    data_json['Acountinfo_details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
@@ -177,7 +177,7 @@ def get_val(val):
 def equity(data):
     data_json={}
     data_json['equity']=[]
-    data_json['details']=[]
+    data_json['equity_details']=[]
     sum_val=0
     count=0
     for index in range(len(data)):
@@ -219,14 +219,14 @@ def equity(data):
                     raise
                 count=count+1
                 data_json['equity'].append(temp)
-    data_json['details'].append({'total count':count,'Total':sum_val})
+    data_json['equity_details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
 def equity_type_2(data):
     data_json={}
-    data_json['equity']=[]
-    data_json['details']=[]
+    data_json['equity2type']=[]
+    data_json['equity2type_details']=[]
     sum_val=0
     count=0
     for index in range(len(data)):
@@ -251,15 +251,15 @@ def equity_type_2(data):
                     print('error in security')
                     raise
                 count=count+1
-                data_json['equity'].append(temp)
-    data_json['details'].append({'total count':count,'Total':sum_val})
+                data_json['equity2type'].append(temp)
+    data_json['equity2type_details'].append({'total count':count,'Total':sum_val})
     return(data_json)
 
 
 def corporate_bond_type_2(data):
     data_json={}
-    data_json['corporate bond']=[]
-    data_json['details']=[]
+    data_json['corporate2 bond']=[]
+    data_json['corporate2_details']=[]
     sum_val=0
     count=0
     for index in range(len(data)):
@@ -293,7 +293,7 @@ def corporate_bond_type_2(data):
                     print('data error')
                     raise
             count=count+1
-            data_json['corporate bond'].append(temp)
-    data_json['details'].append({'total count':count,'Total':sum_val})
+            data_json['corporate2 bond'].append(temp)
+    data_json['corporate2_details'].append({'total count':count,'Total':sum_val})
     return(data_json)
         

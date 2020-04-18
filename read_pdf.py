@@ -15,6 +15,7 @@ import cv2
 import pytesseract
 import preprocess_image
 from pytesseract import Output
+import merge
 os.environ['OMP_THREAD_LIMIT']='1'
 
 #DECLARE CONSTANTS
@@ -54,7 +55,7 @@ def save_images(pil_images):
         image.save("page_" + str(index) + ".jpg")
         img=preprocess_image.get_grayscale(cv2.imread("page_" + str(index) + ".jpg"))
         img=preprocess_image.thresholding(img)
-        cv2.imwrite("pageinter_" + str(index) + ".jpg",img)
+        #cv2.imwrite("pageinter_" + str(index) + ".jpg",img)
         t=threading.Thread(target=ocr, args=(img,"page_" + str(index) + ".jpg",))
         t.start()
         t.join()
@@ -74,9 +75,9 @@ if __name__ == "__main__":
         for data in preprocess_text:
             op.write(str(data)+'\n\n')
     final_data=extract_data_nsdl(preprocess_text)
+    merge_data=merge.merge_data(final_data)
     with open(sys.argv[1].split('.')[0]+'.txt','w+',encoding='utf-8',errors='ignore') as op:
-       for data in final_data:
-          op.write(str(data)+'\n\n')
+        json.dump(merge_data,op,indent=4)
     print("----------------------------------- %s seconds -------------------------" % (time.time() - start_time))
 
 
