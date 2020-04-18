@@ -16,6 +16,7 @@ import pytesseract
 import preprocess_image
 from pytesseract import Output
 import merge
+import tempfile
 os.environ['OMP_THREAD_LIMIT']='1'
 
 #DECLARE CONSTANTS
@@ -44,7 +45,8 @@ def ocr(img,big_filename):
 
 
 def pdftopil():
-    pil_images = pdf2image.convert_from_path(PDF_PATH, dpi=DPI, output_folder=OUTPUT_FOLDER, userpw=USERPWD, use_cropbox=USE_CROPBOX, strict=STRICT)
+    #with tempfile.TemporaryDirectory() as path:
+    pil_images = pdf2image.convert_from_path(PDF_PATH, dpi=DPI, output_folder=OUTPUT_FOLDER, userpw=USERPWD)
     return pil_images
     
     
@@ -76,8 +78,15 @@ if __name__ == "__main__":
             op.write(str(data)+'\n\n')
     final_data=extract_data_nsdl(preprocess_text)
     merge_data=merge.merge_data(final_data)
-    with open(sys.argv[1].split('.')[0]+'.txt','w+',encoding='utf-8',errors='ignore') as op:
-        json.dump(merge_data,op,indent=4)
+    if merge.check_total(merge_data):
+        result_data=merge.format(merge_data)
+        with open(sys.argv[1].split('.')[0]+'.txt','w+',encoding='utf-8',errors='ignore') as op:
+            json.dump(result_data,op,indent=4)
+    else:
+        result_data=merge.format(merge_data)
+        with open(sys.argv[1].split('.')[0]+'_error.txt','w+',encoding='utf-8',errors='ignore') as op:
+            json.dump(result_data,op,indent=4)
+
     print("----------------------------------- %s seconds -------------------------" % (time.time() - start_time))
 
 

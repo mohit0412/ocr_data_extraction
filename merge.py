@@ -24,10 +24,10 @@ def merge_data(list_of_dict):
     for dictionary in list_of_dict:
         len_total+=1
         if len(dictionary.keys())!=2:
-            if 'extra' in result.keys():
-                result['extra']+=[dictionary]
+            if 'ParsedData' in result.keys():
+                result['ParsedData']+=[dictionary]
             else:
-                result['extra']=[dictionary]
+                result['ParsedData']=[dictionary]
             continue
         for key,value in dictionary.items():
             key=key.strip()
@@ -57,11 +57,53 @@ def merge_data(list_of_dict):
                 pass
     return result
                     
+def check_total(result):
+    total2=0
+    total=0
+    for data in result:
+        if re.search(r'AccountInfo',data):
+            total2+=round(float(result[data][-1]['GrandTotal']),2)
+        elif not re.search(r'ParsedData',data):
+            total+=round(float(result[data][-1]['TotalValue']),2)
+    if total2==total:
+        print('matched',total2-total)
+        return True
+    else:
+        return False
+       
+
+def format(result):
+    account_data={}
+    result_data={}
+    for data in result:
+        if re.search(r'ParsedData',data):
+            result_data[data]=result[data]
+        elif re.search(r'AccountInfo',data):
+            #print(data,result[data])
+            result_data[data]=result[data]
+            for line in result[data][0:-1]:
+                account_data[line['Value']]=line
+        else:
+            for key,value in account_data.items():
+                if round(float(key),2)==round(float(result[data][-1]['TotalValue']),2):
+                    if result[data]:
+                        result_data[data]={'details':value,'description':result[data]}
+                else:
+                    if result[data]:
+                        result_data[data]={'details_error':'error','description':result[data]}
+    return result_data
+        
+
 
 
 
 # with open('C:/Users/roger/Downloads/shwetajohari.log','r') as file:
 #     openfile=eval(file.read())
 #     result=merge_data(openfile)
-#     with open('test2.log','w') as op:
-#         json.dump(result,op,indent=4)
+#     if check_total(result):
+#         result_data=format(result)
+#         with open('test2.log','w') as op:
+#             json.dump(result_data,op,indent=4)
+        
+
+    
