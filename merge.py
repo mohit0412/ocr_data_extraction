@@ -2,108 +2,123 @@ import json
 import re
 from collections import OrderedDict 
 
-def add_details(sum,value):
-    if list(value[0].keys())[0] in sum:
-        sum[list(value[0].keys())[0]]+=value[0][list(value[0].keys())[0]]
-    else:
-        sum[list(value[0].keys())[0]]=value[0][list(value[0].keys())[0]]
-    if list(value[0].keys())[1] in sum:
-        sum[list(value[0].keys())[1]]+=value[0][list(value[0].keys())[1]]
-    else:
-        sum[list(value[0].keys())[1]]=value[0][list(value[0].keys())[1]]
-    return sum
+no_of_isin=[]
+total_value=[]
+account=[]
+total_value_account=0
+total_claims_value=0
+claim_value_list=[]
 
 
-def merge_data(list_of_dict):
-    index=1
-    prev_key=''
-    visit_key=[]
+def check_val(values):
+    global total_value, no_of_isin, account
+    for data in values:
+        if 'No of isin' in data.keys():
+            account.append(data)
+            no_of_isin.append(int(data['No of isin']))
+        if 'Value' in data.keys():
+            total_value.append(float(data['Value']))
+        
+
+def match_account_details(key,values):
+    global total_value, no_of_isin, account
+    temp1=0
+    temp2=0
+    for key1,value1 in values[0].items():
+        if re.search(r'TotalValue',key1): 
+            temp1=round(float(value1),2)
+        else:
+            temp2=int(value1)
+    index1=-1
+    index2=-1
+    if temp1 in total_value:
+        index1=total_value.index(temp1)
+    elif temp2 in no_of_isin:
+        index2=no_of_isin.index(temp2)
+    if index1!=-1:
+        return(account[index1])
+    elif index2!=-1:
+        return(account[index1])
+
+
+
+def merge_data2(list_of_dict):
+    global total_value_account,total_claims_value,claim_value_list
     result=OrderedDict()
-    sum={}
-    len_total=0
+    index=0
+    key_result=''
     for dictionary in list_of_dict:
-        len_total+=1
-        if len(dictionary.keys())!=2:
-            if 'ParsedData' in result.keys():
-                result['ParsedData']+=[dictionary]
+        if re.search(r'Address|StatementPeriod|PAN|Client ID|DP ID',str(dictionary.keys())):
+            if 'ClientDetail' in result.keys():
+                result['ClientDetail']+=[dictionary]
             else:
-                result['ParsedData']=[dictionary]
+                result['ClientDetail']=[dictionary]
             continue
         for key,value in dictionary.items():
-            key=key.strip()
-            if re.search('_details',key):
-                add_details(sum,value)
-                if len_total==len(list_of_dict):
-                    result[next(reversed(result))]+=[sum]
-            elif type(value)==list:
-                if prev_key==key and prev_key:
-                    result[key+str(index)]+=value
-                    #print('....',key)
-                else:
-                    if key in visit_key:
-                        result[next(reversed(result))]+=[sum]
-                        index+=1
-                        result[key+str(index)]=value
-                        #print('++',key)
+            if re.search(r'AccountInfo|account_details',key):
+                if re.search(r'AccountInfo',key):
+                    check_val(value)
+                    if key in result.keys():
+                        result[key]+=value
                     else:
-                        if result:
-                            result[next(reversed(result))]+=[sum]
-                        result[key+str(index)]=value
-                        #print('+++',key)
-                    sum={}
-                visit_key.append(key)
-                prev_key=key
+                        result[key]=value
+                else:
+                    if key in result.keys():
+                        value[0]['TotalAccount']+=result[key][0]['TotalAccount']
+                        value[0]['GrandTotal']+=result[key][0]['GrandTotal']
+                        result[key]=value   
+                        total_value_account=value[0]['GrandTotal']
+                    else:
+                        result[key]=value
             else:
-                pass
+                if len(value)>0:
+                    if re.search(r'_details',key):
+                        if value[0]['TotalValue']!=0:
+                            total_claims_value+=value[0]['TotalValue']
+                            result[key_result]+=[{key:value}]
+                            claim_value_list.append(value[0])
+                            if match_account_details(key,value):
+                                result[key_result]=[{'AccountType':match_account_details(key,value)}]+result[key_result]   
+                            else:
+                                result[key_result]=[{'AccountType':'error'}]+result[key_result]        
+                    else:
+                        if key in result.keys():
+                            index+=1
+                            result[key+' '*index]=[{'description':value}]
+                            key_result=key+' '*index
+                        else:
+                            result[key]=[{'description':value}]
+                            key_result=key           
     return result
-                    
-def check_total(result):
-    total2=0
-    total=0
-    for data in result:
-        if re.search(r'AccountInfo',data):
-            total2+=round(float(result[data][-1]['GrandTotal']),2)
-        elif not re.search(r'ParsedData',data):
-            total+=round(float(result[data][-1]['TotalValue']),2)
-    if total2==total:
-        print('matched',total2-total)
+
+
+def count_check():
+    if total_claims_value==total_value_account:
         return True
     else:
         return False
-       
-
-def format(result):
-    account_data={}
-    result_data={}
-    for data in result:
-        if re.search(r'ParsedData',data):
-            result_data[data]=result[data]
-        elif re.search(r'AccountInfo',data):
-            #print(data,result[data])
-            result_data[data]=result[data]
-            for line in result[data][0:-1]:
-                account_data[line['Value']]=line
-        else:
-            for key,value in account_data.items():
-                if round(float(key),2)==round(float(result[data][-1]['TotalValue']),2):
-                    if result[data]:
-                        result_data[data]={'details':value,'description':result[data]}
-                else:
-                    if result[data]:
-                        result_data[data]={'details_error':'error','description':result[data]}
-    return result_data
-        
 
 
-
-
-# with open('C:/Users/roger/Downloads/shwetajohari.log','r') as file:
+# op=open('anstemp.txt','w')
+# with open('C:/Users/roger/Desktop/work/ocr_work/nsdl_ocr/git/ocr_data_extraction/pdf/comp/kpmenon_intermediate.txt','r') as file:
 #     openfile=eval(file.read())
-#     result=merge_data(openfile)
-#     if check_total(result):
-#         result_data=format(result)
-#         with open('test2.log','w') as op:
-#             json.dump(result_data,op,indent=4)
+#     rst=merge_data2(openfile)
+#     print(claim_value_list)
+#     # print(no_of_isin)
+#     if count_check():
+#         json.dump(rst,op,indent=4)
+    
+    
+
+
+
+
+
+    # result=merge_data(openfile)
+    # if check_total(result):
+    #     result_data=format(result)
+    #     with open('test2.log','w') as op:
+    #         json.dump(result_data,op,indent=4)
         
 
     

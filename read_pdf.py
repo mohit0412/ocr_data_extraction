@@ -69,23 +69,27 @@ if __name__ == "__main__":
     pil_images = pdftopil()
     save_images(pil_images)
     text=re.sub(r'\s\s+','\n',result)
-    # with open('intermediate_text_chandrika1.txt','w+') as op:
-    #     for data in text.split('\n'):
-    #         op.write(str(data)+'\n\n')
     preprocess_text=read_hpi(text.split('\n'))
-    with open(sys.argv[1].split('.')[0]+'_intermediate.txt','w+') as op:
-        for data in preprocess_text:
-            op.write(str(data)+'\n\n')
+    # with open(sys.argv[1].split('.')[0]+'_intermediate2.txt','w+') as op:
+    #     op.write(str(preprocess_text)+'\n\n')
     final_data=extract_data_nsdl(preprocess_text)
-    merge_data=merge.merge_data(final_data)
-    if merge.check_total(merge_data):
-        result_data=merge.format(merge_data)
+    with open(sys.argv[1].split('.')[0]+'_intermediate.txt','w+') as op:
+        json.dump(final_data,op,indent=4)
+    merge_data=merge.merge_data2(final_data)
+    if merge.count_check():
         with open(sys.argv[1].split('.')[0]+'.txt','w+',encoding='utf-8',errors='ignore') as op:
-            json.dump(result_data,op,indent=4)
+            json.dump(merge_data,op,indent=4)
     else:
-        result_data=merge.format(merge_data)
         with open(sys.argv[1].split('.')[0]+'_error.txt','w+',encoding='utf-8',errors='ignore') as op:
-            json.dump(result_data,op,indent=4)
+            json.dump(merge_data,op,indent=4)
+    # if merge.check_total(merge_data):
+    #     result_data=merge.format(merge_data)
+    #     with open(sys.argv[1].split('.')[0]+'.txt','w+',encoding='utf-8',errors='ignore') as op:
+    #         json.dump(result_data,op,indent=4)
+    # else:
+    #     result_data=merge.format(merge_data)
+    #     with open(sys.argv[1].split('.')[0]+'_error.txt','w+',encoding='utf-8',errors='ignore') as op:
+    #         json.dump(result_data,op,indent=4)
 
     print("----------------------------------- %s seconds -------------------------" % (time.time() - start_time))
 
